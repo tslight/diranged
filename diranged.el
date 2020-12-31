@@ -36,13 +36,13 @@ Setting this variable directly does not take effect; use either
   :type 'integer)
 
 ;;;###autoload
-(defcustom diranged-kill-on-move-p t
+(defcustom diranged-kill-on-move t
   "Kill spawned buffers as we go."
   :group 'diranged
   :type 'boolean)
 
 ;;;###autoload
-(defcustom diranged-kill-on-exit-p t
+(defcustom diranged-kill-on-exit t
   "Kill spawned buffers on quitting variable `diranged-mode'."
   :group 'diranged
   :type 'boolean)
@@ -50,6 +50,12 @@ Setting this variable directly does not take effect; use either
 ;;;###autoload
 (defcustom diranged-steal-all-the-keys t
   "Let diranged have it's wicked way with `dired-mode-map'."
+  :group 'diranged
+  :type 'boolean)
+
+;;;###autoload
+(defcustom diranged-restore-windows t
+  "Restore previous window layout after exiting `dired-mode-map'."
   :group 'diranged
   :type 'boolean)
 
@@ -84,7 +90,7 @@ Setting this variable directly does not take effect; use either
         ;; if first 2 elements are the same we're probably banging up against
         ;; the top or bottom of the file list.
         (unless (eq (car diranged--buffers) (cadr diranged--buffers))
-          (if (and diranged-kill-on-move-p (cdr diranged--buffers))
+          (if (and diranged-kill-on-move (cdr diranged--buffers))
               (diranged--killing-spree (cdr diranged--buffers)))))))
 
 ;;;###autoload
@@ -182,7 +188,7 @@ Otherwise `dired-find-file-other-window'."
 (defun diranged-up-directory ()
   "Go up a directory, but retain preview state."
   (interactive)
-  (if diranged-kill-on-move-p
+  (if diranged-kill-on-move
       (find-alternate-file "..")
     (dired-up-directory))
   (diranged--display-file))
@@ -237,10 +243,14 @@ Like `ranger-mode', but just crazy, not evil."
   :lighter " diranged!"
   (if diranged-mode
       (progn
+        (if diranged-restore-windows
+            (window-configuration-to-register :pre_diranged))
         (diranged--display-file)
         (if diranged-steal-all-the-keys (diranged--remap-all)))
     (progn
-      (if diranged-kill-on-exit-p (diranged--killing-spree))
+      (if diranged-restore-windows
+          (jump-to-register :pre_diranged))
+      (if diranged-kill-on-exit (diranged--killing-spree))
       (if diranged-steal-all-the-keys
           (diranged--restore-dired-mode-map)))))
 
