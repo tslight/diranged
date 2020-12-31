@@ -1,0 +1,244 @@
+;;; diranged.el --- dired on acid -*- lexical-binding: t; -*-
+
+;;; Commentary:
+
+;; A minor mode to make dired a bit more like ranger, but just crazy, not evil.
+
+;; Copyright (C) 2020 Toby Slight
+;; Author: Toby Slight tslight@pm.me
+;; Version: 0.0.1
+;; URL: https://gitlab.com/tspub/lisp/diranged
+;; Package-Requires: ((emacs "26.1"))
+
+;;; Code:
+(require 'dired)
+
+;;;###autoload
+(defgroup diranged nil
+  "See the file at point when browsing in a Dired buffer."
+  :group 'dired)
+
+;;;###autoload
+(defcustom diranged-mode nil
+  "Toggle variable `diranged-mode'.
+Setting this variable directly does not take effect; use either
+\\[customize] or the function `diranged-mode'."
+  :set 'custom-set-minor-mode
+  :initialize 'custom-initialize-default
+  :type 'boolean
+  :group 'dired
+  :require 'dired)
+
+;;;###autoload
+(defcustom diranged-max-file-size 10
+  "Maximum size of file to view in MB."
+  :group 'diranged
+  :type 'integer)
+
+;;;###autoload
+(defcustom diranged-kill-on-move-p t
+  "Kill spawned buffers as we go."
+  :group 'diranged
+  :type 'boolean)
+
+;;;###autoload
+(defcustom diranged-kill-on-exit-p t
+  "Kill spawned buffers on quitting variable `diranged-mode'."
+  :group 'diranged
+  :type 'boolean)
+
+(defvar diranged--buffer-list (buffer-list)
+  "Current buffer list, don't kill already open buffers.")
+
+(defvar diranged--buffers nil
+  "All buffers opened by `diranged'.")
+
+(defun diranged--file-larger-than-p (filename)
+  "Check if FILENAME is larger than `diranged-max-file-size'."
+  (> (/ (floor
+         (file-attribute-size (file-attributes filename)))
+        (* 1024 1024))
+     diranged-max-file-size))
+
+;;;###autoload
+(defun diranged-kill (&optional buffers)
+  "Kill BUFFERS created by `diranged'."
+  (mapc (lambda (buffer)
+          (unless (or (member buffer diranged--buffer-list)
+                      ;; never delete current buffer!
+                      (eq (current-buffer) buffer))
+            (kill-buffer-if-not-modified buffer)))
+        (if buffers buffers diranged--buffers)))
+
+;;;###autoload
+(defun diranged ()
+  "View current file in temporary buffer and other window."
+  (interactive)
+  (if (dired-file-name-at-point)
+      (unless (diranged--file-larger-than-p (dired-get-filename))
+        (dired-find-file-other-window)
+        (setq diranged--buffers
+              (cons (current-buffer) diranged--buffers))
+        (other-window 1)
+        ;; if first 2 elements are the same we're probably banging up against
+        ;; the top or bottom of the file list.
+        (unless (eq (car diranged--buffers) (car (cdr diranged--buffers)))
+          (if (and diranged-kill-on-move-p (cdr diranged--buffers))
+              (diranged-kill (cdr diranged--buffers)))))))
+
+;;;###autoload
+(defun diranged-beginning-of-buffer ()
+  "Go to first file in directory and preview."
+  (interactive)
+  (goto-char (point-min))
+  (dired-next-line 2)
+  (diranged))
+
+;;;###autoload
+(defun diranged-end-of-buffer ()
+  "Go to last file in directory and preview."
+  (interactive)
+  (goto-char (point-max))
+  (dired-next-line -1)
+  (diranged))
+
+;;;###autoload
+(defun diranged-scroll-up ()
+  "Scroll up and preview."
+  (interactive)
+  (scroll-up-command)
+  (diranged))
+
+;;;###autoload
+(defun diranged-scroll-down ()
+  "Scroll down and preview."
+  (interactive)
+  (scroll-down-command)
+  (diranged))
+
+;;;###autoload
+(defun diranged-prev-dirline (arg)
+  "Move down to next ARG directory and preview."
+  (interactive "p")
+  (dired-prev-dirline (if (> arg 1) arg 1))
+  (diranged))
+
+;;;###autoload
+(defun diranged-next-dirline (arg)
+  "Move up to next ARG directory and preview."
+  (interactive "p")
+  (dired-prev-dirline (if (> arg 1) arg 1))
+  (diranged))
+
+;;;###autoload
+(defun diranged-next-line (arg)
+  "Move down ARG lines and view file in other window."
+  (interactive "p")
+  (dired-next-line (if (> arg 1) arg 1))
+  (if (eobp) (dired-previous-line 1))
+  (diranged))
+
+;;;###autoload
+(defun diranged-previous-line (arg)
+  "Move up ARG lines and view file in other window."
+  (interactive "p")
+  (dired-previous-line (if (> arg 1) arg 1))
+  (while (not (dired-file-name-at-point))
+    (dired-next-line 1)) ;; account for 2 lines at top of dired buffer.
+  (diranged))
+
+;;;###autoload
+(defun diranged-find-alternate-file ()
+  "If visiting a directory, preview the new directory.
+Otherwise `dired-find-file-other-window'."
+  (interactive)
+  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+      (progn (dired-find-alternate-file) (diranged))
+    (dired-find-file-other-window)))
+
+;;;###autoload
+(defun diranged-find-file ()
+  "If visiting a directory, preview the new directory.
+Otherwise `dired-find-file-other-window'."
+  (interactive)
+  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+      (progn (dired-find-file) (diranged))
+    (dired-find-file-other-window)))
+
+;;;###autoload
+(defun diranged-view-file ()
+  "If visiting a directory, preview the new directory."
+  (interactive)
+  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+      (progn (dired-view-file) (diranged))
+    (view-file-other-window (dired-get-filename))))
+
+;;;###autoload
+(defun diranged-up-directory ()
+  "Go up a directory, but retain preview state."
+  (interactive)
+  (if diranged-kill-on-move-p
+      (find-alternate-file "..")
+    (dired-up-directory))
+  (diranged))
+
+(defun diranged--remap-all ()
+  "Remap all motion keys in `dired-mode' to be more `diranged'."
+  (define-key dired-mode-map [remap forward-char] 'diranged-find-alternate-file)
+  (define-key dired-mode-map [remap backward-char] 'diranged-up-directory)
+  (define-key dired-mode-map [remap right-char] 'diranged-find-alternate-file)
+  (define-key dired-mode-map [remap left-char] 'diranged-up-directory)
+  (define-key dired-mode-map [remap next-line] 'diranged-next-line)
+  (define-key dired-mode-map [remap previous-line] 'diranged-previous-line)
+  (define-key dired-mode-map [remap scroll-up-command] 'diranged-scroll-up)
+  (define-key dired-mode-map [remap scroll-down-command] 'diranged-scroll-down)
+  (define-key dired-mode-map [remap beginning-of-buffer] 'diranged-beginning-of-buffer)
+  (define-key dired-mode-map [remap end-of-buffer] 'diranged-end-of-buffer))
+
+(defun diranged--restore-dired-mode-map ()
+  "Restore original state of `dired-mode-map'."
+  (define-key dired-mode-map [remap forward-char] 'forward-char)
+  (define-key dired-mode-map [remap backward-char] 'backward-char)
+  (define-key dired-mode-map [remap right-char] 'right-char)
+  (define-key dired-mode-map [remap left-char] 'left-char)
+  (define-key dired-mode-map [remap next-line] 'next-line)
+  (define-key dired-mode-map [remap previous-line] 'previous-line)
+  (define-key dired-mode-map [remap scroll-up-command] 'scroll-up-command)
+  (define-key dired-mode-map [remap scroll-down-command] 'scroll-down-command)
+  (define-key dired-mode-map [remap beginning-of-buffer] 'beginning-of-buffer)
+  (define-key dired-mode-map [remap end-of-buffer] 'end-of-buffer))
+
+;;;###autoload
+(defvar diranged-map
+  (let ((map (make-sparse-keymap)))
+    (define-key map [remap dired-find-alternate-file] 'diranged-find-alternate-file)
+    (define-key map [remap dired-find-file] 'diranged-find-file)
+    (define-key map [remap dired-view-file] 'diranged-view-file)
+    (define-key map [remap dired-up-directory] 'diranged-up-directory)
+    (define-key map [remap dired-next-line] 'diranged-next-line)
+    (define-key map [remap dired-previous-line] 'diranged-previous-line)
+    (define-key map [remap dired-next-dirline] 'diranged-next-dirline)
+    (define-key map [remap dired-prev-dirline] 'diranged-prev-dirline)
+    map)
+  "Keymap for variable `diranged-mode'.")
+
+;;;###autoload
+(define-minor-mode diranged-mode
+  "Toggle preview of files when browsing in a Dired buffer."
+  :global t
+  :group 'diranged
+  :keymap diranged-map
+  (if diranged-mode
+      (progn
+        (diranged)
+        (diranged--remap-all)
+        (progn
+          (if diranged-kill-on-exit-p (diranged-kill))
+          (diranged--restore-dired-mode-map)))))
+
+(provide 'diranged)
+;; Local Variables:
+;; indent-tabs-mode: nil
+;; byte-compile-warnings: (not free-vars noruntime)
+;; End:
+;;; diranged.el ends here

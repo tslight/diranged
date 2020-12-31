@@ -1,0 +1,15 @@
+#+TITLE: Diranged
+#+AUTHOR: Toby Slight
+
+A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger][ranger]], but just crazy not [[https://github.com/emacs-evil/evil][evil]].
+
+After enabling this mode, any ~dired~ movement command, will preview the file
+at point in ~other-window~.
+
+The following customisation options and their defaults are shown below:
+
+#+begin_src emacs-lisp
+(setq diranged-max-file-size 10  ; MB size limit for previewing files
+      diranged-kill-on-move-p t  ; cleanup spawed buffers as we go
+      diranged-kill-on-exit-p t) ; cleanup spawed buffers when quitting
+#+end_src
