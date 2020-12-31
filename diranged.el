@@ -80,10 +80,7 @@ Setting this variable directly does not take effect; use either
   (interactive)
   (if (dired-file-name-at-point)
       (unless (diranged--file-larger-than-p (dired-get-filename))
-        (dired-find-file-other-window)
-        (setq diranged--buffers
-              (cons (current-buffer) diranged--buffers))
-        (other-window 1)
+        (add-to-list 'diranged--buffers (window-buffer (dired-display-file)))
         ;; if first 2 elements are the same we're probably banging up against
         ;; the top or bottom of the file list.
         (unless (eq (car diranged--buffers) (cadr diranged--buffers))
