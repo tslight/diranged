@@ -193,6 +193,27 @@ Otherwise `dired-find-file-other-window'."
     (dired-up-directory))
   (diranged--display-file))
 
+;;;###autoload
+(defun diranged-flag-file-deletion (arg)
+  "Flag ARG number of files for deletion and then preview."
+  (interactive "p")
+  (dired-flag-file-deletion (if (> arg 1) arg 1))
+  (diranged--display-file))
+
+;;;###autoload
+(defun diranged-do-delete ()
+  "Delete, but maintain preview."
+  (interactive)
+  (dired-do-delete)
+  (diranged--display-file))
+
+;;;###autoload
+(defun diranged-mark (arg)
+  "Mark ARG files, and maintain preview."
+  (interactive "p")
+  (dired-mark (if (> arg 1) arg 1))
+  (diranged--display-file))
+
 (defun diranged--remap-all ()
   "Remap all motion keys in `dired-mode' to be more `diranged'."
   (define-key dired-mode-map [remap forward-char] 'diranged-find-alternate-file)
@@ -225,6 +246,9 @@ Otherwise `dired-find-file-other-window'."
     (define-key map [remap dired-find-alternate-file] 'diranged-find-alternate-file)
     (define-key map [remap dired-find-file] 'diranged-find-file)
     (define-key map [remap dired-view-file] 'diranged-view-file)
+    (define-key map [remap dired-mark] 'diranged-mark)
+    (define-key map [remap dired-do-delete] 'diranged-do-delete)
+    (define-key map [remap dired-flag-file-deletion] 'diranged-flag-file-deletion)
     (define-key map [remap dired-up-directory] 'diranged-up-directory)
     (define-key map [remap dired-next-line] 'diranged-next-line)
     (define-key map [remap dired-previous-line] 'diranged-previous-line)
