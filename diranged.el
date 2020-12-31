@@ -11,7 +11,6 @@
 ;; Package-Requires: ((emacs "26.1"))
 
 ;;; Code:
-(require 'cl)
 (require 'dired)
 
 ;;;###autoload
@@ -286,12 +285,11 @@ Otherwise `dired-find-file-other-window'."
 
 (defun diranged--find-dired-buffer ()
   "Return the next available `dired' buffer."
-  (car (cl-remove-if nil
-                     (mapcar (lambda (buffer)
-                               (with-current-buffer buffer
-                                 (if (equal major-mode 'dired-mode)
-                                     buffer)))
-                             (buffer-list)))))
+  (car (delete nil (mapcar (lambda (buffer)
+                             (with-current-buffer buffer
+                               (if (equal major-mode 'dired-mode)
+                                   buffer)))
+                           (buffer-list)))))
 
 ;;;###autoload
 (define-minor-mode diranged-mode
