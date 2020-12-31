@@ -15,7 +15,7 @@ Add ~diranged.el~ to your ~load-path~, and then:
   (define-key dired-mode-map "r" 'diranged-mode)
 #+end_src
 
-Or to use it as the default way to navigate ~dired-buffers~:
+Or to use it as the default way to navigate ~dired~ buffers:
 
 #+begin_src emacs-lisp
   (add-hook 'dired-mode-hook 'diranged-mode)
