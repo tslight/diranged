@@ -8,7 +8,7 @@ at point in ~other-window~.
 
 * Install
 
-Add this path to your ~load-path~, and then:
+Add ~diranged.el~ to your ~load-path~, and then:
 
 #+begin_src emacs-lisp
   (require 'diranged)
@@ -24,8 +24,7 @@ Or to use it as the default way to navigate ~dired-buffers~:
 With ~use-package~:
 
 #+begin_src emacs-lisp
-  (use-package diranged :ensure nil :after dired
-    :load-path "~/src/gitlab/tspub/lisp/diranged"
+  (use-package diranged :after dired
     :bind (:map dired-mode-map ("r" . diranged-mode)))
 #+end_src
 
