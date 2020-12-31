@@ -228,7 +228,7 @@ Otherwise `dired-find-file-other-window'."
     (define-key map [remap dired-next-dirline] 'diranged-next-dirline)
     (define-key map [remap dired-prev-dirline] 'diranged-prev-dirline)
     map)
-  "Keymap for variable `diranged-mode'.")
+  "Keymap `dired' functions to more `diranged' equivalents.")
 
 ;;;###autoload
 (define-minor-mode diranged-mode
