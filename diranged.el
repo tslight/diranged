@@ -111,6 +111,8 @@ Setting this variable directly does not take effect; use either
   "Scroll up and preview."
   (interactive)
   (scroll-up-command)
+  (while (not (dired-file-name-at-point))
+    (dired-previous-line 1))
   (diranged--display-file))
 
 ;;;###autoload
@@ -118,6 +120,8 @@ Setting this variable directly does not take effect; use either
   "Scroll down and preview."
   (interactive)
   (scroll-down-command)
+  (while (not (dired-file-name-at-point))
+    (dired-next-line 1))
   (diranged--display-file))
 
 ;;;###autoload
@@ -131,7 +135,7 @@ Setting this variable directly does not take effect; use either
 (defun diranged-next-dirline (arg)
   "Move up to next ARG directory and preview."
   (interactive "p")
-  (dired-prev-dirline (if (> arg 1) arg 1))
+  (dired-next-dirline (if (> arg 1) arg 1))
   (diranged--display-file))
 
 ;;;###autoload
@@ -236,11 +240,11 @@ Like `ranger-mode', but just crazy, not evil."
   (if diranged-mode
       (progn
         (diranged--display-file)
-        (if diranged-steal-all-the-keys (diranged--remap-all))
-        (progn
-          (if diranged-kill-on-exit-p (diranged--killing-spree))
-          (if diranged-steal-all-the-keys
-              (diranged--restore-dired-mode-map))))))
+        (if diranged-steal-all-the-keys (diranged--remap-all)))
+    (progn
+      (if diranged-kill-on-exit-p (diranged--killing-spree))
+      (if diranged-steal-all-the-keys
+          (diranged--restore-dired-mode-map)))))
 
 (provide 'diranged)
 ;; Local Variables:
