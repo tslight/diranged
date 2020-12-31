@@ -1,7 +1,7 @@
-#+TITLE: DIRANGED
+#+TITLE: Dired on Acid!
 #+AUTHOR: Toby Slight
 
-A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger][ranger]], but just crazy not [[https://github.com/emacs-evil/evil][evil]].
+A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger][ranger]], but just crazy, not [[https://github.com/emacs-evil/evil][evil]].
 
 After enabling this mode, any ~dired~ movement command, will preview the file
 at point in ~other-window~.

@@ -1,4 +1,4 @@
-;;; diranged.el --- dired on acid -*- lexical-binding: t; -*-
+;;; diranged.el --- Dired on Acid -*- lexical-binding: t; -*-
 
 ;;; Commentary:
 
@@ -15,7 +15,7 @@
 
 ;;;###autoload
 (defgroup diranged nil
-  "See the file at point when browsing in a Dired buffer."
+  "Toggle preview of files when navigating in `dired'."
   :group 'dired)
 
 ;;;###autoload
@@ -47,6 +47,12 @@ Setting this variable directly does not take effect; use either
   :group 'diranged
   :type 'boolean)
 
+;;;###autoload
+(defcustom diranged-steal-all-the-keys t
+  "Let diranged have it's wicked way with `dired-mode-map'."
+  :group 'diranged
+  :type 'boolean)
+
 (defvar diranged--buffer-list (buffer-list)
   "Current buffer list, don't kill already open buffers.")
 
@@ -60,9 +66,8 @@ Setting this variable directly does not take effect; use either
         (* 1024 1024))
      diranged-max-file-size))
 
-;;;###autoload
-(defun diranged-kill (&optional buffers)
-  "Kill BUFFERS created by `diranged'."
+(defun diranged--killing-spree (&optional buffers)
+  "Mercilessly murder BUFFERS created by `diranged'."
   (mapc (lambda (buffer)
           (unless (or (member buffer diranged--buffer-list)
                       ;; never delete current buffer!
@@ -70,8 +75,7 @@ Setting this variable directly does not take effect; use either
             (kill-buffer-if-not-modified buffer)))
         (if buffers buffers diranged--buffers)))
 
-;;;###autoload
-(defun diranged ()
+(defun diranged--display-file()
   "View current file in temporary buffer and other window."
   (interactive)
   (if (dired-file-name-at-point)
@@ -84,7 +88,7 @@ Setting this variable directly does not take effect; use either
         ;; the top or bottom of the file list.
         (unless (eq (car diranged--buffers) (car (cdr diranged--buffers)))
           (if (and diranged-kill-on-move-p (cdr diranged--buffers))
-              (diranged-kill (cdr diranged--buffers)))))))
+              (diranged--killing-spree (cdr diranged--buffers)))))))
 
 ;;;###autoload
 (defun diranged-beginning-of-buffer ()
@@ -92,7 +96,7 @@ Setting this variable directly does not take effect; use either
   (interactive)
   (goto-char (point-min))
   (dired-next-line 2)
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-end-of-buffer ()
@@ -100,35 +104,35 @@ Setting this variable directly does not take effect; use either
   (interactive)
   (goto-char (point-max))
   (dired-next-line -1)
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-scroll-up ()
   "Scroll up and preview."
   (interactive)
   (scroll-up-command)
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-scroll-down ()
   "Scroll down and preview."
   (interactive)
   (scroll-down-command)
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-prev-dirline (arg)
   "Move down to next ARG directory and preview."
   (interactive "p")
   (dired-prev-dirline (if (> arg 1) arg 1))
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-next-dirline (arg)
   "Move up to next ARG directory and preview."
   (interactive "p")
   (dired-prev-dirline (if (> arg 1) arg 1))
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-next-line (arg)
@@ -136,7 +140,7 @@ Setting this variable directly does not take effect; use either
   (interactive "p")
   (dired-next-line (if (> arg 1) arg 1))
   (if (eobp) (dired-previous-line 1))
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-previous-line (arg)
@@ -145,7 +149,7 @@ Setting this variable directly does not take effect; use either
   (dired-previous-line (if (> arg 1) arg 1))
   (while (not (dired-file-name-at-point))
     (dired-next-line 1)) ;; account for 2 lines at top of dired buffer.
-  (diranged))
+  (diranged--display-file))
 
 ;;;###autoload
 (defun diranged-find-alternate-file ()
@@ -153,7 +157,7 @@ Setting this variable directly does not take effect; use either
 Otherwise `dired-find-file-other-window'."
   (interactive)
   (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
-      (progn (dired-find-alternate-file) (diranged))
+      (progn (dired-find-alternate-file) (diranged--display-file))
     (dired-find-file-other-window)))
 
 ;;;###autoload
@@ -162,7 +166,7 @@ Otherwise `dired-find-file-other-window'."
 Otherwise `dired-find-file-other-window'."
   (interactive)
   (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
-      (progn (dired-find-file) (diranged))
+      (progn (dired-find-file) (diranged--display-file))
     (dired-find-file-other-window)))
 
 ;;;###autoload
@@ -170,7 +174,7 @@ Otherwise `dired-find-file-other-window'."
   "If visiting a directory, preview the new directory."
   (interactive)
   (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
-      (progn (dired-view-file) (diranged))
+      (progn (dired-view-file) (diranged--display-file))
     (view-file-other-window (dired-get-filename))))
 
 ;;;###autoload
@@ -180,7 +184,7 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-kill-on-move-p
       (find-alternate-file "..")
     (dired-up-directory))
-  (diranged))
+  (diranged--display-file))
 
 (defun diranged--remap-all ()
   "Remap all motion keys in `dired-mode' to be more `diranged'."
@@ -224,17 +228,19 @@ Otherwise `dired-find-file-other-window'."
 
 ;;;###autoload
 (define-minor-mode diranged-mode
-  "Toggle preview of files when browsing in a Dired buffer."
+  "Toggle preview of files when navigating in `dired'.
+Like `ranger-mode', but just crazy, not evil."
   :global t
   :group 'diranged
   :keymap diranged-map
   (if diranged-mode
       (progn
-        (diranged)
-        (diranged--remap-all)
+        (diranged--display-file)
+        (if diranged-steal-all-the-keys (diranged--remap-all))
         (progn
-          (if diranged-kill-on-exit-p (diranged-kill))
-          (diranged--restore-dired-mode-map)))))
+          (if diranged-kill-on-exit-p (diranged--killing-spree))
+          (if diranged-steal-all-the-keys
+              (diranged--restore-dired-mode-map))))))
 
 (provide 'diranged)
 ;; Local Variables:
