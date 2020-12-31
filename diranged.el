@@ -252,7 +252,7 @@ Otherwise `dired-find-file-other-window'."
   (define-key dired-mode-map [remap end-of-buffer] 'end-of-buffer))
 
 ;;;###autoload
-(defvar diranged-map
+(defvar diranged-mode-map
   (let ((map (make-sparse-keymap)))
     (define-key map [remap dired-find-alternate-file] 'diranged-find-alternate-file)
     (define-key map [remap dired-find-file] 'diranged-find-file)
@@ -297,11 +297,12 @@ Otherwise `dired-find-file-other-window'."
 Like `ranger-mode', but just crazy, not evil."
   :global t
   :group 'diranged
-  :keymap diranged-map
+  :keymap diranged-mode-map
   :lighter " diranged!"
   :require 'dired
   ;; If we are not in a `dired' buffer, switch to one or create one.
-  (unless (eq major-mode 'dired-mode)
+  (unless (derived-mode-p 'dired-mode)
+    (message "Are you diranged? Not yet...")
     (let ((dired-buffer (diranged--find-dired-buffer)))
       (if dired-buffer
           (switch-to-buffer dired-buffer)
