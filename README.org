@@ -33,7 +33,8 @@ With ~use-package~:
 The following customisation options and their defaults are shown below:
 
 #+begin_src emacs-lisp
-  (setq diranged-max-file-size 10  ; MB size limit for previewing files
-        diranged-kill-on-move-p t  ; cleanup spawed buffers as we go
-        diranged-kill-on-exit-p t) ; cleanup spawed buffers when quitting
+  (setq diranged-max-file-size 10      ; MB size limit for previewing files
+        diranged-kill-on-move-p t      ; cleanup spawed buffers as we go
+        diranged-kill-on-exit-p t      ; cleanup spawed buffers on exit
+        diranged-steal-all-the-keys t) ; overwrite non-dired bindings
 #+end_src
