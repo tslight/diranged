@@ -269,6 +269,20 @@ Otherwise `dired-find-file-other-window'."
     map)
   "Keymap `dired' functions to more `diranged' equivalents.")
 
+(defun diranged--enable ()
+  "Dirange all the `dired' things."
+  (when diranged-restore-windows
+    (window-configuration-to-register :pre_diranged)
+    (delete-other-windows))
+  (if diranged-steal-all-the-keys (diranged--remap-all))
+  (diranged--display-file))
+
+(defun diranged--disable ()
+  "Restore `dired' to sanity."
+  (if diranged-restore-windows (jump-to-register :pre_diranged))
+  (if diranged-kill-on-exit (diranged--killing-spree))
+  (if diranged-steal-all-the-keys (diranged--restore-dired-mode-map)))
+
 ;;;###autoload
 (define-minor-mode diranged-mode
   "Toggle preview of files when navigating in `dired'.
@@ -277,15 +291,10 @@ Like `ranger-mode', but just crazy, not evil."
   :group 'diranged
   :keymap diranged-map
   :lighter " diranged!"
+  :require 'dired
   (if diranged-mode
-      (progn
-        (if diranged-restore-windows (window-configuration-to-register :pre_diranged))
-        (diranged--display-file)
-        (if diranged-steal-all-the-keys (diranged--remap-all)))
-    (progn
-      (if diranged-restore-windows (jump-to-register :pre_diranged))
-      (if diranged-kill-on-exit (diranged--killing-spree))
-      (if diranged-steal-all-the-keys (diranged--restore-dired-mode-map)))))
+      (diranged--enable)
+    (diranged--disable)))
 
 (provide 'diranged)
 ;; Local Variables:
