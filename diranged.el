@@ -237,7 +237,7 @@ Like `ranger-mode', but just crazy, not evil."
   :global t
   :group 'diranged
   :keymap diranged-map
-  :lighter "diranged"
+  :lighter " diranged!"
   (if diranged-mode
       (progn
         (diranged--display-file)
