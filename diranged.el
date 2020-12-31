@@ -243,16 +243,13 @@ Like `ranger-mode', but just crazy, not evil."
   :lighter " diranged!"
   (if diranged-mode
       (progn
-        (if diranged-restore-windows
-            (window-configuration-to-register :pre_diranged))
+        (if diranged-restore-windows (window-configuration-to-register :pre_diranged))
         (diranged--display-file)
         (if diranged-steal-all-the-keys (diranged--remap-all)))
     (progn
-      (if diranged-restore-windows
-          (jump-to-register :pre_diranged))
+      (if diranged-restore-windows (jump-to-register :pre_diranged))
       (if diranged-kill-on-exit (diranged--killing-spree))
-      (if diranged-steal-all-the-keys
-          (diranged--restore-dired-mode-map)))))
+      (if diranged-steal-all-the-keys (diranged--restore-dired-mode-map)))))
 
 (provide 'diranged)
 ;; Local Variables:
