@@ -11,6 +11,7 @@
 ;; Package-Requires: ((emacs "26.1"))
 
 ;;; Code:
+(require 'cl)
 (require 'dired)
 
 ;;;###autoload
@@ -283,6 +284,15 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-kill-on-exit (diranged--killing-spree))
   (if diranged-steal-all-the-keys (diranged--restore-dired-mode-map)))
 
+(defun diranged--find-dired-buffer ()
+  "Return the next available `dired' buffer."
+  (car (cl-remove-if nil
+                     (mapcar (lambda (buffer)
+                               (with-current-buffer buffer
+                                 (if (equal major-mode 'dired-mode)
+                                     buffer)))
+                             (buffer-list)))))
+
 ;;;###autoload
 (define-minor-mode diranged-mode
   "Toggle preview of files when navigating in `dired'.
@@ -292,9 +302,13 @@ Like `ranger-mode', but just crazy, not evil."
   :keymap diranged-map
   :lighter " diranged!"
   :require 'dired
-  (if diranged-mode
-      (diranged--enable)
-    (diranged--disable)))
+  ;; If we are not in a `dired' buffer, switch to one or create one.
+  (unless (eq major-mode 'dired-mode)
+    (let ((dired-buffer (diranged--find-dired-buffer)))
+      (if dired-buffer
+          (switch-to-buffer dired-buffer)
+        (dired "."))))
+  (if diranged-mode (diranged--enable) (diranged--disable)))
 
 (provide 'diranged)
 ;; Local Variables:
