@@ -223,6 +223,8 @@ Otherwise `dired-find-file-other-window'."
 
 (defun diranged--remap-all ()
   "Remap all motion keys in `dired-mode' to be more `diranged'."
+  (define-key dired-mode-map (kbd "<SPC>") 'scroll-other-window)
+  (define-key dired-mode-map (kbd "<backspace>") 'scroll-other-window-down)
   (define-key dired-mode-map [remap forward-char] 'diranged-find-alternate-file)
   (define-key dired-mode-map [remap backward-char] 'diranged-up-directory)
   (define-key dired-mode-map [remap right-char] 'diranged-find-alternate-file)
@@ -236,6 +238,8 @@ Otherwise `dired-find-file-other-window'."
 
 (defun diranged--restore-dired-mode-map ()
   "Restore original state of `dired-mode-map'."
+  (define-key dired-mode-map (kbd "<SPC>") 'next-line)
+  (define-key dired-mode-map (kbd "<backspace>") 'previous-line)
   (define-key dired-mode-map [remap forward-char] 'forward-char)
   (define-key dired-mode-map [remap backward-char] 'backward-char)
   (define-key dired-mode-map [remap right-char] 'right-char)
@@ -262,9 +266,6 @@ Otherwise `dired-find-file-other-window'."
     (define-key map [remap dired-previous-line] 'diranged-previous-line)
     (define-key map [remap dired-next-dirline] 'diranged-next-dirline)
     (define-key map [remap dired-prev-dirline] 'diranged-prev-dirline)
-    (define-key map (kbd "<SPC>") 'scroll-other-window)
-    (define-key map (kbd "S-<SPC>") 'scroll-other-window-down)
-    (define-key map (kbd "<backspace>") 'scroll-other-window-down)
     map)
   "Keymap `dired' functions to more `diranged' equivalents.")
 
