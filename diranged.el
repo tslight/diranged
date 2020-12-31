@@ -86,7 +86,7 @@ Setting this variable directly does not take effect; use either
         (other-window 1)
         ;; if first 2 elements are the same we're probably banging up against
         ;; the top or bottom of the file list.
-        (unless (eq (car diranged--buffers) (car (cdr diranged--buffers)))
+        (unless (eq (car diranged--buffers) (cadr diranged--buffers))
           (if (and diranged-kill-on-move-p (cdr diranged--buffers))
               (diranged--killing-spree (cdr diranged--buffers)))))))
 
