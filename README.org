@@ -6,6 +6,13 @@ A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger]
 After enabling this mode, any ~dired~ movement command, will preview the file
 at point in ~other-window~.
 
+~diranged~ aims to keep a preview for every motion command, regardless of what
+your ~dired-mode-map~ motion keys are bound to.
+
+All keys should be consistent with ~dired-mode~ and standard Emacs bindings,
+with the exception of ~<spc>~ and ~<backspace>~, which will now
+~scroll-other-window~ and ~scroll-other-window-down~ respectively.
+
 * Install
 
 Add ~diranged.el~ to your ~load-path~, and then:
