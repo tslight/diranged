@@ -6,10 +6,35 @@ A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger]
 After enabling this mode, any ~dired~ movement command, will preview the file
 at point in ~other-window~.
 
+* Install
+
+Add this path to your ~load-path~, and then:
+
+#+begin_src emacs-lisp
+  (require 'diranged)
+  (define-key dired-mode-map "r" 'diranged-mode)
+#+end_src
+
+Or to use it as the default way to navigate ~dired-buffers~:
+
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode-hook 'diranged-mode)
+#+end_src
+
+With ~use-package~:
+
+#+begin_src emacs-lisp
+  (use-package diranged :ensure nil :after dired
+    :load-path "~/src/gitlab/tspub/lisp/diranged"
+    :bind (:map dired-mode-map ("r" . diranged-mode)))
+#+end_src
+
+* Customise
+
 The following customisation options and their defaults are shown below:
 
 #+begin_src emacs-lisp
-(setq diranged-max-file-size 10  ; MB size limit for previewing files
-      diranged-kill-on-move-p t  ; cleanup spawed buffers as we go
-      diranged-kill-on-exit-p t) ; cleanup spawed buffers when quitting
+  (setq diranged-max-file-size 10  ; MB size limit for previewing files
+        diranged-kill-on-move-p t  ; cleanup spawed buffers as we go
+        diranged-kill-on-exit-p t) ; cleanup spawed buffers when quitting
 #+end_src
