@@ -321,16 +321,14 @@ Like `ranger-mode', but just crazy, not evil."
   :global t
   :group 'diranged
   :keymap diranged-mode-map
-  :lighter " diranged!"
-  :require 'dired
-  ;; If we are not in a `dired' buffer, switch to one or create one.
-  (unless (derived-mode-p 'dired-mode)
-    (message "Are you diranged? Not yet...")
-    (let ((dired-buffer (diranged--find-dired-buffer)))
-      (if dired-buffer
-          (switch-to-buffer dired-buffer)
-        (dired "."))))
-  (if diranged-mode (diranged--enable) (diranged--disable)))
+  :lighter " diranged"
+  (if (derived-mode-p 'dired-mode)
+      (if diranged-mode
+          (diranged--enable)
+        (diranged--disable))
+    (progn
+      (setq diranged-mode nil)
+      (error "Only `dired-mode' can be diranged"))))
 
 (provide 'diranged)
 ;; Local Variables:
