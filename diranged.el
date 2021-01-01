@@ -174,7 +174,10 @@ Otherwise `dired-find-file-other-window'."
   (interactive)
   (if (and (dired-file-name-at-point)
            (file-directory-p (dired-file-name-at-point)))
-      (progn (dired-find-alternate-file) (diranged--display-file))
+      (progn
+        (dired-find-alternate-file)
+        (diranged-mode 1)
+        (diranged--display-file))
     (dired-find-file-other-window)))
 
 ;;;###autoload
@@ -184,7 +187,10 @@ Otherwise `dired-find-file-other-window'."
   (interactive)
   (if (and (dired-file-name-at-point)
            (file-directory-p (dired-file-name-at-point)))
-      (progn (dired-find-file) (diranged--display-file))
+      (progn
+        (dired-find-file)
+        (diranged-mode 1)
+        (diranged--display-file))
     (dired-find-file-other-window)))
 
 ;;;###autoload
@@ -193,7 +199,10 @@ Otherwise `dired-find-file-other-window'."
   (interactive)
   (if (and (dired-file-name-at-point)
            (file-directory-p (dired-file-name-at-point)))
-      (progn (dired-view-file) (diranged--display-file))
+      (progn
+        (dired-view-file)
+        (diranged-mode 1)
+        (diranged--display-file))
     (view-file-other-window (dired-file-name-at-point))))
 
 ;;;###autoload
@@ -203,6 +212,7 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-kill-on-move
       (find-alternate-file "..")
     (dired-up-directory))
+  (diranged-mode 1)
   (diranged--display-file))
 
 ;;;###autoload
@@ -297,28 +307,22 @@ Otherwise `dired-find-file-other-window'."
   (when diranged-restore-windows
     (window-configuration-to-register :pre_diranged)
     (delete-other-windows))
-  (if diranged-steal-all-the-keys (diranged--remap-all))
+  (if diranged-steal-all-the-keys
+      (diranged--remap-all))
   (diranged--display-file))
 
 (defun diranged--disable ()
   "Restore `dired' to sanity."
-  (if diranged-restore-windows (jump-to-register :pre_diranged))
+  (if diranged-restore-windows
+      (jump-to-register :pre_diranged))
   (if diranged-kill-on-exit (diranged--killing-spree))
-  (if diranged-steal-all-the-keys (diranged--restore-dired-mode-map)))
-
-(defun diranged--find-dired-buffer ()
-  "Return the next available `dired' buffer."
-  (car (delete nil (mapcar (lambda (buffer)
-                             (with-current-buffer buffer
-                               (if (equal major-mode 'dired-mode)
-                                   buffer)))
-                           (buffer-list)))))
+  (if diranged-steal-all-the-keys
+      (diranged--restore-dired-mode-map)))
 
 ;;;###autoload
 (define-minor-mode diranged-mode
   "Toggle preview of files when navigating in `dired'.
 Like `ranger-mode', but just crazy, not evil."
-  :global t
   :group 'diranged
   :keymap diranged-mode-map
   :lighter " diranged"
