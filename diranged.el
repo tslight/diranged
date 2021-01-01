@@ -65,6 +65,12 @@ Setting this variable directly does not take effect; use either
 (defvar diranged--buffers nil
   "All buffers opened by `diranged'.")
 
+(defvar diranged--window-list (window-list)
+  "Current window list. Don't kill already open windows.")
+
+(defvar diranged--preview-window nil
+  "Window of the preview.")
+
 (defun diranged--file-larger-than-p (filename)
   "Check if FILENAME is larger than `diranged-max-file-size'."
   (> (/ (floor
@@ -73,7 +79,8 @@ Setting this variable directly does not take effect; use either
      diranged-max-file-size))
 
 (defun diranged--killing-spree (&optional buffers)
-  "Mercilessly murder BUFFERS created by `diranged'."
+  "Mercilessly murder BUFFERS created by `diranged'.
+If KILL-WINDOW is true also delete the preview window."
   (mapc (lambda (buffer)
           (unless (or (member buffer diranged--buffer-list)
                       ;; never delete current buffer!
@@ -87,6 +94,8 @@ Setting this variable directly does not take effect; use either
   (if (dired-file-name-at-point)
       (unless (diranged--file-larger-than-p (dired-get-filename))
         (add-to-list 'diranged--buffers (window-buffer (dired-display-file)))
+        (setq diranged--preview-window (get-buffer-window
+                                        (car diranged--buffers)))
         ;; if first 2 elements are the same we're probably banging up against
         ;; the top or bottom of the file list.
         (unless (eq (car diranged--buffers) (cadr diranged--buffers))
@@ -221,6 +230,16 @@ Otherwise `dired-find-file-other-window'."
   (dired-unmark (if (> arg 1) arg 1))
   (diranged--display-file))
 
+;;;###autoload
+(defun diranged-quit-window ()
+  "Kill current preview when burying `dired'."
+  (interactive)
+  (when (derived-mode-p 'dired-mode)
+    (diranged--killing-spree)
+    (if diranged-restore-windows
+        (jump-to-register :pre_diranged))
+    (quit-window)))
+
 (defun diranged--remap-all ()
   "Remap all motion keys in `dired-mode' to be more `diranged'."
   (define-key dired-mode-map (kbd "<SPC>") 'scroll-other-window)
@@ -234,7 +253,9 @@ Otherwise `dired-find-file-other-window'."
   (define-key dired-mode-map [remap scroll-up-command] 'diranged-scroll-up)
   (define-key dired-mode-map [remap scroll-down-command] 'diranged-scroll-down)
   (define-key dired-mode-map [remap beginning-of-buffer] 'diranged-beginning-of-buffer)
-  (define-key dired-mode-map [remap end-of-buffer] 'diranged-end-of-buffer))
+  (define-key dired-mode-map [remap end-of-buffer] 'diranged-end-of-buffer)
+  (define-key dired-mode-map [remap quit-window] 'diranged-quit-window)
+  )
 
 (defun diranged--restore-dired-mode-map ()
   "Restore original state of `dired-mode-map'."
