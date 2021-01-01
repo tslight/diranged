@@ -92,7 +92,7 @@ If KILL-WINDOW is true also delete the preview window."
   "View current file in temporary buffer and other window."
   (interactive)
   (if (dired-file-name-at-point)
-      (unless (diranged--file-larger-than-p (dired-get-filename))
+      (unless (diranged--file-larger-than-p (dired-file-name-at-point))
         (add-to-list 'diranged--buffers (window-buffer (dired-display-file)))
         (setq diranged--preview-window (get-buffer-window
                                         (car diranged--buffers)))
@@ -172,7 +172,8 @@ If KILL-WINDOW is true also delete the preview window."
   "If visiting a directory, preview the new directory.
 Otherwise `dired-find-file-other-window'."
   (interactive)
-  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+  (if (and (dired-file-name-at-point)
+           (file-directory-p (dired-file-name-at-point)))
       (progn (dired-find-alternate-file) (diranged--display-file))
     (dired-find-file-other-window)))
 
@@ -181,7 +182,8 @@ Otherwise `dired-find-file-other-window'."
   "If visiting a directory, preview the new directory.
 Otherwise `dired-find-file-other-window'."
   (interactive)
-  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+  (if (and (dired-file-name-at-point)
+           (file-directory-p (dired-file-name-at-point)))
       (progn (dired-find-file) (diranged--display-file))
     (dired-find-file-other-window)))
 
@@ -189,9 +191,10 @@ Otherwise `dired-find-file-other-window'."
 (defun diranged-view-file ()
   "If visiting a directory, preview the new directory."
   (interactive)
-  (if (and (dired-file-name-at-point) (file-directory-p (dired-get-filename)))
+  (if (and (dired-file-name-at-point)
+           (file-directory-p (dired-file-name-at-point)))
       (progn (dired-view-file) (diranged--display-file))
-    (view-file-other-window (dired-get-filename))))
+    (view-file-other-window (dired-file-name-at-point))))
 
 ;;;###autoload
 (defun diranged-up-directory ()
@@ -254,8 +257,7 @@ Otherwise `dired-find-file-other-window'."
   (define-key dired-mode-map [remap scroll-down-command] 'diranged-scroll-down)
   (define-key dired-mode-map [remap beginning-of-buffer] 'diranged-beginning-of-buffer)
   (define-key dired-mode-map [remap end-of-buffer] 'diranged-end-of-buffer)
-  (define-key dired-mode-map [remap quit-window] 'diranged-quit-window)
-  )
+  (define-key dired-mode-map [remap quit-window] 'diranged-quit-window))
 
 (defun diranged--restore-dired-mode-map ()
   "Restore original state of `dired-mode-map'."
