@@ -26,8 +26,7 @@ Setting this variable directly does not take effect; use either
   :set 'custom-set-minor-mode
   :initialize 'custom-initialize-default
   :type 'boolean
-  :group 'dired
-  :require 'dired)
+  :group 'dired)
 
 ;;;###autoload
 (defcustom diranged-max-file-size 10
@@ -59,6 +58,12 @@ Setting this variable directly does not take effect; use either
   :group 'diranged
   :type 'boolean)
 
+;;;###autoload
+(defcustom diranged-disable-on-quit t
+  "Disable `diranged-mode' on `quit-window'."
+  :group 'diranged
+  :type 'boolean)
+
 (defvar diranged--buffer-list (buffer-list)
   "Current buffer list, don't kill already open buffers.")
 
@@ -67,9 +72,6 @@ Setting this variable directly does not take effect; use either
 
 (defvar diranged--window-list (window-list)
   "Current window list. Don't kill already open windows.")
-
-(defvar diranged--preview-window nil
-  "Window of the preview.")
 
 (defun diranged--file-larger-than-p (filename)
   "Check if FILENAME is larger than `diranged-max-file-size'."
@@ -94,8 +96,6 @@ If KILL-WINDOW is true also delete the preview window."
   (if (dired-file-name-at-point)
       (unless (diranged--file-larger-than-p (dired-file-name-at-point))
         (add-to-list 'diranged--buffers (window-buffer (dired-display-file)))
-        (setq diranged--preview-window (get-buffer-window
-                                        (car diranged--buffers)))
         ;; if first 2 elements are the same we're probably banging up against
         ;; the top or bottom of the file list.
         (unless (eq (car diranged--buffers) (cadr diranged--buffers))
@@ -247,11 +247,13 @@ Otherwise `dired-find-file-other-window'."
 (defun diranged-quit-window ()
   "Kill current preview when burying `dired'."
   (interactive)
-  (when (derived-mode-p 'dired-mode)
-    (diranged--killing-spree)
-    (if diranged-restore-windows
-        (jump-to-register :pre_diranged))
-    (quit-window)))
+  (if diranged-disable-on-quit
+      (diranged-mode -1)
+    (progn
+      (diranged--killing-spree)
+      (if diranged-restore-windows
+          (jump-to-register :pre_diranged))))
+  (quit-window))
 
 (defun diranged--remap-all ()
   "Remap all motion keys in `dired-mode' to be more `diranged'."
@@ -323,6 +325,7 @@ Otherwise `dired-find-file-other-window'."
 (define-minor-mode diranged-mode
   "Toggle preview of files when navigating in `dired'.
 Like `ranger-mode', but just crazy, not evil."
+  :init-value nil
   :group 'diranged
   :keymap diranged-mode-map
   :lighter " diranged"
