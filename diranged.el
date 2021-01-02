@@ -74,27 +74,39 @@ Setting this variable directly does not take effect; use either
         (* 1024 1024))
      diranged-max-file-size))
 
-(defun diranged--killing-spree (&optional buffers)
-  "Mercilessly murder BUFFERS created by `diranged'.
-If KILL-WINDOW is true also delete the preview window."
-  (mapc (lambda (buffer)
-          (unless (or (member buffer diranged--buffer-list)
-                      ;; never delete current buffer!
-                      (eq (current-buffer) buffer))
-            (kill-buffer-if-not-modified buffer)))
-        (if buffers buffers diranged--buffers)))
-
-(defun diranged--display-file()
-  "View current file in temporary buffer and other window."
+(defun diranged--kill-buffers-without-window ()
+  "Kill all `diranged--buffers', not displayed in any window."
   (interactive)
-  (if (dired-file-name-at-point)
-      (unless (diranged--file-larger-than-p (dired-file-name-at-point))
-        (add-to-list 'diranged--buffers (window-buffer (dired-display-file)))
-        ;; if first 2 elements are the same we're probably banging up against
-        ;; the top or bottom of the file list.
-        (unless (eq (car diranged--buffers) (cadr diranged--buffers))
-          (if (and diranged-kill-on-move (cdr diranged--buffers))
-              (diranged--killing-spree (cdr diranged--buffers)))))))
+  (mapc (lambda (buffer)
+          (unless (get-buffer-window buffer t)
+            (delete buffer diranged--buffers)
+            (kill-buffer-if-not-modified buffer)))
+        diranged--buffers))
+
+(defun diranged--display-directory (directory)
+  "Enable `diranged-mode' on DIRECTORY and return buffer name."
+  (with-current-buffer (or
+                        (car (or (dired-buffers-for-dir directory) ()))
+                        (dired-noselect directory))
+    (setq diranged-mode 1)
+    (run-hooks 'diranged-mode-hook)
+    (current-buffer)))
+
+(defun diranged--display-file ()
+  "View current file in temporary buffer and other window."
+  (let ((entry-name (dired-file-name-at-point)))
+    (unless (diranged--file-larger-than-p entry-name)
+      (add-to-list 'diranged--buffers
+                   (window-buffer
+                    (display-buffer
+                     (if (file-directory-p entry-name)
+                         (diranged--display-directory entry-name)
+                       (or
+                        (find-buffer-visiting entry-name)
+                        (find-file-noselect entry-name)))
+                     t)))
+      (if diranged-kill-on-move
+          (diranged--kill-buffers-without-window)))))
 
 ;;;###autoload
 (defun diranged-beginning-of-buffer ()
@@ -170,7 +182,6 @@ Otherwise `dired-find-file-other-window'."
            (file-directory-p (dired-file-name-at-point)))
       (progn
         (dired-find-alternate-file)
-        (diranged-mode 1)
         (diranged--display-file))
     (dired-find-file-other-window)))
 
@@ -183,7 +194,6 @@ Otherwise `dired-find-file-other-window'."
            (file-directory-p (dired-file-name-at-point)))
       (progn
         (dired-find-file)
-        (diranged-mode 1)
         (diranged--display-file))
     (dired-find-file-other-window)))
 
@@ -195,7 +205,6 @@ Otherwise `dired-find-file-other-window'."
            (file-directory-p (dired-file-name-at-point)))
       (progn
         (dired-view-file)
-        (diranged-mode 1)
         (diranged--display-file))
     (view-file-other-window (dired-file-name-at-point))))
 
@@ -206,8 +215,8 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-kill-on-move
       (find-alternate-file "..")
     (dired-up-directory))
-  (add-to-list 'diranged--buffers (current-buffer))
   (diranged-mode 1)
+  (add-to-list 'diranged--buffers (current-buffer))
   (diranged--display-file))
 
 ;;;###autoload
@@ -245,7 +254,7 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-disable-on-quit
       (diranged-mode -1)
     (progn
-      (diranged--killing-spree)
+      (diranged--kill-buffers-without-window)
       (if diranged-restore-windows
           (jump-to-register :pre_diranged))))
   (quit-window))
@@ -290,10 +299,13 @@ Otherwise `dired-find-file-other-window'."
 
 (defun diranged--disable ()
   "Restore `dired' to sanity."
-  (if diranged-restore-windows
-      (jump-to-register :pre_diranged))
-  (if diranged-kill-on-exit (diranged--killing-spree))
-  (setq diranged--buffers nil))
+  (let ((current-point (point)))
+    (if diranged-restore-windows
+        (jump-to-register :pre_diranged))
+    (if diranged-kill-on-exit
+        (diranged--kill-buffers-without-window))
+    (setq diranged--buffers nil)
+    (goto-char current-point)))
 
 ;;;###autoload
 (define-minor-mode diranged-mode
