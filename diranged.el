@@ -256,40 +256,22 @@ Otherwise `dired-find-file-other-window'."
           (jump-to-register :pre_diranged))))
   (quit-window))
 
-(defun diranged--remap-all ()
-  "Remap all motion keys in `dired-mode' to be more `diranged'."
-  (define-key dired-mode-map (kbd "<SPC>") 'scroll-other-window)
-  (define-key dired-mode-map (kbd "<backspace>") 'scroll-other-window-down)
-  (define-key dired-mode-map [remap forward-char] 'diranged-find-alternate-file)
-  (define-key dired-mode-map [remap backward-char] 'diranged-up-directory)
-  (define-key dired-mode-map [remap right-char] 'diranged-find-alternate-file)
-  (define-key dired-mode-map [remap left-char] 'diranged-up-directory)
-  (define-key dired-mode-map [remap next-line] 'diranged-next-line)
-  (define-key dired-mode-map [remap previous-line] 'diranged-previous-line)
-  (define-key dired-mode-map [remap scroll-up-command] 'diranged-scroll-up)
-  (define-key dired-mode-map [remap scroll-down-command] 'diranged-scroll-down)
-  (define-key dired-mode-map [remap beginning-of-buffer] 'diranged-beginning-of-buffer)
-  (define-key dired-mode-map [remap end-of-buffer] 'diranged-end-of-buffer)
-  (define-key dired-mode-map [remap quit-window] 'diranged-quit-window))
-
-(defun diranged--restore-dired-mode-map ()
-  "Restore original state of `dired-mode-map'."
-  (define-key dired-mode-map (kbd "<SPC>") 'next-line)
-  (define-key dired-mode-map (kbd "<backspace>") 'previous-line)
-  (define-key dired-mode-map [remap forward-char] 'forward-char)
-  (define-key dired-mode-map [remap backward-char] 'backward-char)
-  (define-key dired-mode-map [remap right-char] 'right-char)
-  (define-key dired-mode-map [remap left-char] 'left-char)
-  (define-key dired-mode-map [remap next-line] 'next-line)
-  (define-key dired-mode-map [remap previous-line] 'previous-line)
-  (define-key dired-mode-map [remap scroll-up-command] 'scroll-up-command)
-  (define-key dired-mode-map [remap scroll-down-command] 'scroll-down-command)
-  (define-key dired-mode-map [remap beginning-of-buffer] 'beginning-of-buffer)
-  (define-key dired-mode-map [remap end-of-buffer] 'end-of-buffer))
-
 ;;;###autoload
 (defvar diranged-mode-map
   (let ((map (make-sparse-keymap)))
+    (define-key map (kbd "<SPC>") 'scroll-other-window)
+    (define-key map (kbd "<backspace>") 'scroll-other-window-down)
+    (define-key map [remap forward-char] 'diranged-find-alternate-file)
+    (define-key map [remap backward-char] 'diranged-up-directory)
+    (define-key map [remap right-char] 'diranged-find-alternate-file)
+    (define-key map [remap left-char] 'diranged-up-directory)
+    (define-key map [remap next-line] 'diranged-next-line)
+    (define-key map [remap previous-line] 'diranged-previous-line)
+    (define-key map [remap scroll-up-command] 'diranged-scroll-up)
+    (define-key map [remap scroll-down-command] 'diranged-scroll-down)
+    (define-key map [remap beginning-of-buffer] 'diranged-beginning-of-buffer)
+    (define-key map [remap end-of-buffer] 'diranged-end-of-buffer)
+    (define-key map [remap quit-window] 'diranged-quit-window)
     (define-key map [remap dired-find-alternate-file] 'diranged-find-alternate-file)
     (define-key map [remap dired-find-file] 'diranged-find-file)
     (define-key map [remap dired-view-file] 'diranged-view-file)
@@ -310,8 +292,6 @@ Otherwise `dired-find-file-other-window'."
   (when diranged-restore-windows
     (window-configuration-to-register :pre_diranged)
     (delete-other-windows))
-  (if diranged-steal-all-the-keys
-      (diranged--remap-all))
   (diranged--display-file))
 
 (defun diranged--disable ()
@@ -319,8 +299,6 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-restore-windows
       (jump-to-register :pre_diranged))
   (if diranged-kill-on-exit (diranged--killing-spree))
-  (if diranged-steal-all-the-keys
-      (diranged--restore-dired-mode-map))
   (setq diranged--buffers nil))
 
 ;;;###autoload
