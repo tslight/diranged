@@ -320,7 +320,8 @@ Otherwise `dired-find-file-other-window'."
       (jump-to-register :pre_diranged))
   (if diranged-kill-on-exit (diranged--killing-spree))
   (if diranged-steal-all-the-keys
-      (diranged--restore-dired-mode-map)))
+      (diranged--restore-dired-mode-map))
+  (setq diranged--buffers nil))
 
 ;;;###autoload
 (define-minor-mode diranged-mode
