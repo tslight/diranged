@@ -45,8 +45,7 @@ The following customisation options and their defaults are shown below:
         diranged-kill-on-move t        ; cleanup spawed buffers as we go
         diranged-kill-on-exit t        ; cleanup spawed buffers on exit
         diranged-max-file-size 10      ; MB size limit for previewing files
-        diranged-restore-windows t     ; restore windows state on exit
-        diranged-steal-all-the-keys t) ; overwrite non-dired bindings
+        diranged-restore-windows t)    ; restore windows state on exit
 #+end_src
 
 * Alternatives

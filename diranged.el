@@ -47,12 +47,6 @@ Setting this variable directly does not take effect; use either
   :type 'boolean)
 
 ;;;###autoload
-(defcustom diranged-steal-all-the-keys t
-  "Let diranged have it's wicked way with `dired-mode-map'."
-  :group 'diranged
-  :type 'boolean)
-
-;;;###autoload
 (defcustom diranged-restore-windows t
   "Restore previous window layout after exiting `dired-mode-map'."
   :group 'diranged
