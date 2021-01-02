@@ -88,7 +88,7 @@ Setting this variable directly does not take effect; use either
   (with-current-buffer (or
                         (car (or (dired-buffers-for-dir directory) ()))
                         (dired-noselect directory))
-    (setq diranged-mode 1)
+    (diranged-mode 1)
     (run-hooks 'diranged-mode-hook)
     (current-buffer)))
 
