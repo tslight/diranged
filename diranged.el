@@ -212,6 +212,7 @@ Otherwise `dired-find-file-other-window'."
   (if diranged-kill-on-move
       (find-alternate-file "..")
     (dired-up-directory))
+  (add-to-list 'diranged--buffers (current-buffer))
   (diranged-mode 1)
   (diranged--display-file))
 
