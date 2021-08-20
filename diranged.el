@@ -7,7 +7,7 @@
 ;; Copyright (C) 2020 Toby Slight
 ;; Author: Toby Slight tslight@pm.me
 ;; Version: 0.0.1
-;; URL: https://gitlab.com/tspub/lisp/diranged
+;; URL: https://gitlab.com/tslight/diranged
 ;; Package-Requires: ((emacs "26.1"))
 
 ;;; Code:
