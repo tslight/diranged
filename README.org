@@ -1,0 +1,57 @@
+#+TITLE: Dired on Acid!
+#+AUTHOR: Toby Slight
+
+A minor mode to make ~dired~ a bit more like [[https://github.com/ranger/ranger][ranger]], but just crazy, not [[https://github.com/emacs-evil/evil][evil]].
+
+After enabling this mode, *EVERY* ~dired~ movement command, /should/ preview
+the file or directory at point in ~other-window~.
+
+~diranged~ aims to keep a preview for every motion command, regardless of what
+your ~dired-mode-map~ motion keys are bound to. If you find an edge-case -
+please let me know.
+
+All keys should be consistent with ~dired-mode~ and standard Emacs bindings,
+with the exception of ~<SPC>~ and ~<backspace>~, which will now
+~scroll-other-window~ and ~scroll-other-window-down~ respectively.
+
+* Install
+
+Add ~diranged.el~ to your ~load-path~, and then:
+
+#+begin_src emacs-lisp
+  (require 'diranged)
+  (define-key dired-mode-map "r" 'diranged-mode)
+#+end_src
+
+Or to use it as the default way to navigate ~dired~ buffers:
+
+#+begin_src emacs-lisp
+  (add-hook 'dired-mode-hook 'diranged-mode)
+#+end_src
+
+With ~use-package~:
+
+#+begin_src emacs-lisp
+  (use-package diranged
+    :bind (:map dired-mode-map ("r" . diranged-mode)))
+#+end_src
+
+* Customise
+
+The following customisation options and their defaults are shown below:
+
+#+begin_src emacs-lisp
+  (setq diranged-disable-on-quit t     ; disable diranged on quit-window
+        diranged-kill-on-move t        ; cleanup spawed buffers as we go
+        diranged-kill-on-exit t        ; cleanup spawed buffers on exit
+        diranged-max-file-size 10      ; MB size limit for previewing files
+        diranged-restore-windows t)    ; restore windows state on exit
+#+end_src
+
+* Alternatives
+
+Not [[https://github.com/emacs-evil/evil][evil]] enough for you? Take a look at [[https://github.com/ralesi/ranger.el][ranger-mode]]
+
+A very similar package exists called [[https://github.com/asok/peep-dired][peep-dired]], but this doesn't quite cut the
+mustard IMHO since it only works for up and down lines with ~Ctrl-p/n~ or
+~Up/Down~ and hasn't been touched in nearly 5 years.
